@@ -70,8 +70,13 @@ print("Best negative BIC:", grid_search.best_score_)
 # Clustering
 scaled_ds["GMM_Cluster"] = best_gmm.predict(scaled_ds)
 
+
 # CHECK CLUSTERING
 
 # Check balances & sizes
 print(scaled_ds["GMM_Cluster"].value_counts())
 print(scaled_ds["GMM_Cluster"].value_counts(normalize=True) * 100)
+
+# Feature Profiles
+cluster_means = scaled_ds.groupby("GMM_Cluster").mean()
+print(cluster_means)
