@@ -2,16 +2,16 @@
 
 # Import Packages
 import pandas as pd
-from pandas.core.methods import describe
-from scipy.stats import skew
-from scipy import stats
-from sklearn.mixture import GaussianMixture
-import matplotlib.pyplot as plt
-from sklearn.model_selection import GridSearchCV
-from sklearn import linear_model
-from sklearn.preprocessing import StandardScaler
-from sklearn import preprocessing
 import numpy as np
+from pandas.core.methods import describe
+from scipy import stats
+from scipy.stats import skew
+from sklearn import preprocessing
+from sklearn import linear_model
+from sklearn.mixture import GaussianMixture
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 # Set Parameters
 pd.set_option("display.precision", 3)
@@ -31,7 +31,8 @@ print(skew(ds))
 
 
 # PREPROCESSING
-# Identify & remove outliers
+
+# Outliers
 z = np.abs(stats.zscore(ds))
 print(z)
 
@@ -48,30 +49,29 @@ print(scaled_ds)
 
 # MODELLING
 
-# Cluster Selection
+# Identify BIC
 def gmm_bic(estimator, X):
-    return -estimator.bic(X)  # Define BIC scoring function
+    return -estimator.bic(X)
 
 param_grid = {
     "n_components": range(1,10),
     "covariance_type": ["spherical", "tied", "diag", "full"]
-}  # Set up parameter grid of 1-9 components w. all covariance types
+}
 
 grid_search = GridSearchCV(
-    GaussianMixture(random_state = 42),  # For reproducability
+    GaussianMixture(random_state = 42),
     param_grid = param_grid,
     scoring = gmm_bic
-)  # Run grid search
-grid_search.fit(wine_scaled)  # Run grid search over scaled data
+)
+grid_search.fit(scaled_ds)
 
-best_gmm = grid_search.best_estimator_  # Label best model
-best_params = grid_search.best_params_  # Label best model parameters
-print("Best model parameters:", best_params)
-print("Best negative BIC (higher is better):", grid_search.best_score_)
+best_gmm = grid_search.best_estimator_
+print("Best model parameters:", grid_search.best_params)
+print("Best negative BIC:", grid_search.best_score_)
 
-gmm_classification = best_gmm.predict(wine_scaled)  # Get hard cluster assignments
+# Clustering
+ds["GMM_Cluster"] = best_gmm.predict(scaled_ds)
 
-data_wine["GMM_Cluster"] = gmm_classification  # Add cluster labels to dataframe
 
 # VISUALISATION
 
