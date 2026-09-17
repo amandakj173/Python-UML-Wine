@@ -3,15 +3,11 @@
 # Import Packages
 import pandas as pd
 import numpy as np
-from pandas.core.methods import describe
 from scipy import stats
 from scipy.stats import skew
-from sklearn import preprocessing
-from sklearn import linear_model
 from sklearn.mixture import GaussianMixture
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
 
 # Set Parameters
 pd.set_option("display.precision", 3)
@@ -46,12 +42,14 @@ scale = StandardScaler()
 scaled_ds = scale.fit_transform(no_outlier_ds)
 print(scaled_ds)
 
+scaled_ds = pd.DataFrame(scaled_ds)
+
 
 # MODELLING
 
 # Identify BIC
-def gmm_bic(estimator, X):
-    return -estimator.bic(X)
+def gmm_bic(estimator, x):
+    return -estimator.bic(x)
 
 param_grid = {
     "n_components": range(1,10),
@@ -66,20 +64,8 @@ grid_search = GridSearchCV(
 grid_search.fit(scaled_ds)
 
 best_gmm = grid_search.best_estimator_
-print("Best model parameters:", grid_search.best_params)
+print("Best model parameters:", grid_search.best_params_)
 print("Best negative BIC:", grid_search.best_score_)
 
 # Clustering
-ds["GMM_Cluster"] = best_gmm.predict(scaled_ds)
-
-
-# VISUALISATION
-
-# Visualisation
-cluster_counts = pd.Series(gmm_classification).value_counts().sort_index()
-GMMCluster = pd.DataFrame({
-    "Cluster": cluster_counts.index,
-    "Size": cluster_counts.values
-})
-print("\nCluster sizes (GMM):", GMMCluster)
-print(GMMCluster)  # Cluster size table
+scaled_ds["GMM_Cluster"] = best_gmm.predict(scaled_ds)
